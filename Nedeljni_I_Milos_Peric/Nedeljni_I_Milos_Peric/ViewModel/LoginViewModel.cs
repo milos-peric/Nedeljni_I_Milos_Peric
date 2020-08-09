@@ -1,7 +1,9 @@
 ﻿using Nedeljni_I_Milos_Peric.Command;
+using Nedeljni_I_Milos_Peric.Utility;
 using Nedeljni_I_Milos_Peric.View;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,9 +16,13 @@ namespace Nedeljni_I_Milos_Peric.ViewModel
     class LoginViewModel : ViewModelBase
     {
         LoginView login;
+        DataBaseService dataBaseService = new DataBaseService();
         public LoginViewModel(LoginView viewLogin)
         {
             login = viewLogin;
+            RandomPasswordGenerator.WriteRandomPasswordToFile();
+            admin = new vwAdmin();
+            manager = new vwManager();
         }
 
         private string userName;
@@ -33,36 +39,67 @@ namespace Nedeljni_I_Milos_Peric.ViewModel
             }
         }
 
-        private ICommand submit;
-        public ICommand Submit
+        private vwAdmin admin;
+        public vwAdmin Admin
         {
-            get
+            get { return admin; }
+            set
             {
-                if (submit == null)
-                {
-                    submit = new RelayCommand(SubmitCommandExecute, param => CanSubmitCommandExecute());
-                }
-                return submit;
+                admin = value;
+                OnPropertyChanged("Admin");
             }
         }
 
-        private void SubmitCommandExecute(object obj)
+        private vwManager manager;
+        public vwManager Manager
+        {
+            get { return manager; }
+            set
+            {
+                manager = value;
+                OnPropertyChanged("Manager");
+            }
+        }
+
+        private ICommand signIn;
+        public ICommand SignIn
+        {
+            get
+            {
+                if (signIn == null)
+                {
+                    signIn = new RelayCommand(SignInCommandExecute, param => CanSignInCommandExecute());
+                }
+                return signIn;
+            }
+        }
+
+        private void SignInCommandExecute(object obj)
         {
             try
             {
                 string password = (obj as PasswordBox).Password;
-                if (UserName.Equals("Mag2019") && password.Equals("Mag2019"))
+                admin = dataBaseService.FindAdminCredentials(UserName, password);
+                manager = dataBaseService.FindManagerCredentials(UserName, password);               
+                if (UserName.Equals("WPFMaster") && password.Equals("WPFAccess"))
                 {
-                    //WorkerView workerView = new WorkerView();
+                    MasterView masterView = new MasterView();
                     login.Close();
-                    //workerView.Show();
+                    masterView.Show();
                     return;
                 }
-                else if (UserName.Equals("Man2019") && password.Equals("Man2019"))
+                if (admin != null)
                 {
-                    //ManagerView managerView = new ManagerView();
+                    AdminView adminView = new AdminView(admin);
                     login.Close();
-                    //managerView.Show();
+                    adminView.Show();
+                    return;
+                }
+                else if (manager != null)
+                {
+                    ManagerView managerView = new ManagerView(manager);
+                    login.Close();
+                    managerView.Show();
                     return;
                 }
                 else
@@ -75,7 +112,7 @@ namespace Nedeljni_I_Milos_Peric.ViewModel
                 MessageBox.Show(ex.ToString());
             }
         }
-        private bool CanSubmitCommandExecute()
+        private bool CanSignInCommandExecute()
         {
             if (string.IsNullOrEmpty(UserName))
             {
@@ -84,6 +121,33 @@ namespace Nedeljni_I_Milos_Peric.ViewModel
             else
             {
                 return true;
+            }
+        }
+
+        private ICommand registerCommand;
+        public ICommand RegisterCommand
+        {
+            get
+            {
+                if (registerCommand == null)
+                {
+                    registerCommand = new RelayCommand(param => RegisterExecute());
+                }
+                return registerCommand;
+            }
+        }
+
+        private void RegisterExecute()
+        {
+            try
+            {
+                RegistrationView registerView = new RegistrationView();
+                login.Close();
+                registerView.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
             }
         }
     }

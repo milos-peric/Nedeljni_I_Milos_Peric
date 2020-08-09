@@ -1,7 +1,6 @@
-﻿using Nedeljni_I_Milos_Peric.Utility;
+﻿using Nedeljni_I_Milos_Peric.ViewModel;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,19 +11,19 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Nedeljni_I_Milos_Peric
+namespace Nedeljni_I_Milos_Peric.View
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for MasterView.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MasterView : Window
     {
-        public MainWindow()
+        public MasterView()
         {
             InitializeComponent();
+            DataContext = new MasterViewModel(this);
         }
     }
 }
